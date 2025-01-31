@@ -1,27 +1,56 @@
-import xarray as xr
-import numpy as np
-import matplotlib.pyplot as plt
-import cartopy.crs as ccrs
+"""
+modelling.py
+
+This module contains functions and classes for building and evaluating machine learning models.
+It includes data preprocessing, model training, hyperparameter tuning, and performance evaluation.
+
+To run a simple test case:
+python modelling.py
+
+Optional command line arguments:
+--model_type: Type of model to use (default: SGDRegressor)
+--test_fraction: Fraction of data to use for testing (default: 0.1)
+--suite: Name of suite to use (default: u-cn464)
+--version: Version of suite to use (default: raw_v0)
+--features: List of features to use (default: siconc,sithic,utau_ai,utau_oi,vtau_ai,vtau_oi,sishea,sistre,sig1_pnorm,sig2_pnorm,sivelv,sivelu)
+--labels: List of labels to use (default: sig1_pnorm)
+--flatten: Flatten data (default: True)
+--StandardScalar: Standardise data (default: True)
+--tune: Tune hyperparameters (default: True)
+--data_points: Data points to feed model (less for quick testing) (default: 1000)
+
+"""
+import argparse as ap
 import pickle
-from sklearn.preprocessing import StandardScaler
-from make_feature_label_pairs import make_feature_label_pairs
-import random 
+import random
+import warnings
+import pprint
+
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
-from sklearn.metrics import mean_squared_error
-from sklearn.metrics import make_scorer
+import xarray as xr
+
+from sklearn.exceptions import DataConversionWarning
+from sklearn.metrics import mean_squared_error, make_scorer
 from sklearn.model_selection import GridSearchCV
 from sklearn.pipeline import make_pipeline
-import pandas as pd
-import argparse as ap
-import warnings
-from sklearn.exceptions import DataConversionWarning
-import pprint
+from sklearn.preprocessing import StandardScaler
+
+from make_feature_label_pairs import make_feature_label_pairs
 
 # Define functions
 
 # Parse command line arguments
 def parse_args(dummy_args=False):
-
+    '''Parse command line arguments.
+    
+    Args: 
+        dummy_args: bool, if True, return dummy arguments for testing
+        
+    Returns:
+        args: dict, dictionary of arguments
+    '''
     if dummy_args:
         args = {'model_type': 'SGDRegressor',
             'test_fraction': 0.1,
@@ -44,10 +73,9 @@ def parse_args(dummy_args=False):
         parser.add_argument('--flatten', type=bool, default=True, help='Flatten data')
         parser.add_argument('--StandardScalar', type=bool, default=True, help='Standardise data')
         parser.add_argument('--tune', type=bool, default=True, help='Tune hyperparameters')
-        parser.add_argument('--data_points', type=int, default=-1, help='Data points to feed model (less for quick testing)')
+        parser.add_argument('--data_points', type=int, default=1000, help='Data points to feed model (less for quick testing)')
         parser.add_argument('--random_seed', type=int, default=1, help='Random seed')
         parser.add_argument('--validation_fraction', type=float, default=0.2, help='Fraction of train data to validate on')
-        parser.add_argument('--testing_pair_choice', type=int, default=0, help='Choice of pair to use for quick code development')
 
         args = parser.parse_args()
         args.features = args.features.split(',')     
@@ -57,6 +85,9 @@ def parse_args(dummy_args=False):
 
 # Load data function
 def load_data(args):
+    '''
+    Load raw data and make feature (X(t)) - label (y(t+1)) pairs.
+    '''
     suite = args['suite']
     version = args['version']
     filename = '../data/' + suite + '/raw/' + suite + '_' + version + '.nc'
@@ -65,7 +96,19 @@ def load_data(args):
 
 # Make test and train sets
 def make_test_train(pairs, args):
-    # convert pairs to pandas dataframe
+    '''
+    Split pairs into training and testing sets, and concatonate the pairs into one dataframe.
+
+    Args:
+        pairs: list, list of pairs of feature and label dataframes
+        args: dict, dictionary of arguments
+
+    Returns:
+        train_X: dataframe, training feature data
+        train_y: dataframe, training label data
+        test_X: dataframe, testing feature data
+        test_y: dataframe, testing label data
+    '''
     pairs_df = []
     for pair in pairs:
         pairs_df.append( 
@@ -93,6 +136,18 @@ def make_test_train(pairs, args):
     return train_X, train_y, test_X, test_y
 
 def reduce_data_points(train_X, train_y, n_data_points):
+    '''
+    Reduce the number of data points in the training set for ease of model development. TODO: do this better with batch training
+
+    Args:
+        train_X: dataframe, training feature data
+        train_y: dataframe, training label data
+        n_data_points: int, number of data points to keep
+
+    Returns:
+        train_X: dataframe, training feature data reduced
+        train_y: dataframe, training label data reduced
+    '''
     if n_data_points > 0:
         indicies = random.sample(range(len(train_X)), n_data_points)
         train_X = train_X.iloc[indicies]
@@ -100,6 +155,20 @@ def reduce_data_points(train_X, train_y, n_data_points):
     return train_X, train_y
 
 def make_validation(train_X, train_y, validation_fraction):
+    '''
+    Make validation set from training set.
+
+    Args:
+        train_X: dataframe, training feature data
+        train_y: dataframe, training label data
+        validation_fraction: float, fraction of data to use for validation
+
+    Returns:
+        train_X: dataframe, training feature data less validation data
+        train_y: dataframe, training label data less validation data
+        val_X: dataframe, validation feature data
+        val_y: dataframe, validation label data
+    '''
     n = len(train_X)
     n_val = int(validation_fraction*n)
     val_indices = random.sample(range(n), n_val)
@@ -117,6 +186,7 @@ def make_validation(train_X, train_y, validation_fraction):
 
 # Make parameter grid
 def make_param_grid(args):
+    ''' Define parameter grid for hyperparameter tuning. '''
     if args['model_type'].lower() == 'sgdregressor':
         param_grid = {
                     'sgdregressor__alpha': [1e-05, 0.0001, 0.001, 0.01, 0.1],
@@ -193,6 +263,7 @@ def make_param_grid(args):
 
 # Load model class
 def load_model(args):
+    ''' Load in the desired model class. '''
     if args['model_type'].lower() == 'sgdregressor':
         from sklearn.linear_model import SGDRegressor
         model = SGDRegressor()
@@ -235,6 +306,7 @@ def load_model(args):
 
 # Set up model
 def define_model(model, args):
+    ''' Define the model by building a pipe that includes (or doesn't) a StandardScalar() step. ''' 
     if args['StandardScalar']:
         scaler = StandardScaler()
         pipe = make_pipeline(scaler, model)
@@ -248,13 +320,39 @@ def define_model(model, args):
 #     return pipe
 
 # Tune hyperparameters
-def tune_hyperparameters(pipe, param_grid, train_X, train_y):        
+def tune_hyperparameters(pipe, param_grid, train_X, train_y):   
+    ''' 
+    Tune hyperparameters using GridSearchCV. 
+    
+    Args:
+    pipe: model, model to tune
+    param_grid: dict, dictionary of hyperparameters to tune
+    train_X: dataframe, training feature data
+    train_y: dataframe, training label data
+
+    Returns:
+    search: GridSearchCV, tuned model
+    '''     
     search = GridSearchCV(pipe, param_grid, scoring='neg_root_mean_squared_error', n_jobs=-1, cv=5, verbose=1)
     search.fit(train_X, train_y)
     return search
 
 # Evaluate model
-def evaluate_model(pipe, val_X, val_y, train_y=None):
+def evaluate_model(pipe, val_X, val_y):
+    '''
+    Evaluate model by predicting on validation set and calculating mean squared error.
+
+    Args:
+    pipe: model, model to evaluate
+    val_X: dataframe, validation feature data
+    val_y: dataframe, validation label data
+
+    Returns:
+    y_pred: dataframe, predicted validation label data
+    score: float, mean squared error
+    fig: figure, figure of predicted vs. true values
+
+    '''
     y_pred = pipe.predict(val_X)
     score = mean_squared_error(val_y, y_pred)
 
@@ -268,12 +366,11 @@ def evaluate_model(pipe, val_X, val_y, train_y=None):
     ax2 = fig.add_subplot(gs[1, 0])
     ax2.hist(val_y, bins=100, density=True, color='blue', alpha=0.5, label='Validation y')
     ax2.hist(y_pred, bins=100, density=True, color='red', alpha=0.5, label='Predicted y')
-    if train_y is not None:
-        ax2.hist(train_y, bins=100, density=True, color='green', alpha=0.5, label='Train y')
     ax2.legend()
     return y_pred, score, fig
 
 def main(args):
+    ''' Main function to load the data and run the model training and evaluation. '''
 
     warnings.simplefilter("ignore", category=DataConversionWarning)
 
