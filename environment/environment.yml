@@ -1,0 +1,5 @@
+name: seaice_stress_emulator
+channels:
+  - conda-mo-internal
+  - conda-forge
+prefix: /home/h05/mathomas/.conda/envs/seaice_stress_emulator

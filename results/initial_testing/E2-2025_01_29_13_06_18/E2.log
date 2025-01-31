@@ -1,0 +1,15 @@
+Train shape initial:  (8344620, 12) (8344620, 1)
+Test shape initial:  (824160, 12) (824160, 1)
+Train shape reduced:  (8000, 12) (8000, 1)
+Validation shape:  (2000, 12) (2000, 1)
+Starting baseline
+Starting tuning
+Fitting 5 folds for each of 160 candidates, totalling 800 fits
+
+==================================
+Finished modelling
+Baseline parameters:  {'memory': None, 'steps': [('standardscaler', StandardScaler()), ('sgdregressor', SGDRegressor())], 'transform_input': None, 'verbose': False, 'standardscaler': StandardScaler(), 'sgdregressor': SGDRegressor(), 'standardscaler__copy': True, 'standardscaler__with_mean': True, 'standardscaler__with_std': True, 'sgdregressor__alpha': 0.0001, 'sgdregressor__average': False, 'sgdregressor__early_stopping': False, 'sgdregressor__epsilon': 0.1, 'sgdregressor__eta0': 0.01, 'sgdregressor__fit_intercept': True, 'sgdregressor__l1_ratio': 0.15, 'sgdregressor__learning_rate': 'invscaling', 'sgdregressor__loss': 'squared_error', 'sgdregressor__max_iter': 1000, 'sgdregressor__n_iter_no_change': 5, 'sgdregressor__penalty': 'l2', 'sgdregressor__power_t': 0.25, 'sgdregressor__random_state': None, 'sgdregressor__shuffle': True, 'sgdregressor__tol': 0.001, 'sgdregressor__validation_fraction': 0.1, 'sgdregressor__verbose': 0, 'sgdregressor__warm_start': False}
+Baseline model MSE:  0.001726572210025878
+Best hyperparameters:  {'memory': None, 'steps': [('standardscaler', StandardScaler()), ('sgdregressor', SGDRegressor(alpha=0.001, l1_ratio=0.4, penalty='elasticnet'))], 'transform_input': None, 'verbose': False, 'standardscaler': StandardScaler(), 'sgdregressor': SGDRegressor(alpha=0.001, l1_ratio=0.4, penalty='elasticnet'), 'standardscaler__copy': True, 'standardscaler__with_mean': True, 'standardscaler__with_std': True, 'sgdregressor__alpha': 0.001, 'sgdregressor__average': False, 'sgdregressor__early_stopping': False, 'sgdregressor__epsilon': 0.1, 'sgdregressor__eta0': 0.01, 'sgdregressor__fit_intercept': True, 'sgdregressor__l1_ratio': 0.4, 'sgdregressor__learning_rate': 'invscaling', 'sgdregressor__loss': 'squared_error', 'sgdregressor__max_iter': 1000, 'sgdregressor__n_iter_no_change': 5, 'sgdregressor__penalty': 'elasticnet', 'sgdregressor__power_t': 0.25, 'sgdregressor__random_state': None, 'sgdregressor__shuffle': True, 'sgdregressor__tol': 0.001, 'sgdregressor__validation_fraction': 0.1, 'sgdregressor__verbose': 0, 'sgdregressor__warm_start': False}
+Best model MSE:  0.0016799312685153818
+==================================

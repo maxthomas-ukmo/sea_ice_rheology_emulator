@@ -1,0 +1,10 @@
+Train shape initial:  (8344620, 12) (8344620, 1)
+Test shape initial:  (824160, 12) (824160, 1)
+Train shape reduced:  (8000, 12) (8000, 1)
+Validation shape:  (2000, 12) (2000, 1)
+Starting baseline
+Starting tuning
+Fitting 5 folds for each of 675 candidates, totalling 3375 fits
+
+==================================
+Finished modelling

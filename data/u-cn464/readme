@@ -1,0 +1,4 @@
+/raw - symlink to raw data
+/toy - small subset of data for code development
+/train - training and validation data
+/test - held out test data
