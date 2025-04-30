@@ -9,11 +9,11 @@ results=../results/initial_testing/$1-$now
 mkdir -p $results
 
 if [ "$1" == "E0" ]; then
-    python modelling.py --data_points 50000 > $1.log
+    python regression.py --data_points 50000 > $1.log
 elif [ "$1" == "E1" ]; then
-    python modelling.py --data_points 10000 --model_type randomforestregressor --features siconc,sithic,utau_ai,utau_oi,vtau_ai,vtau_oi,sishea,sistre,sig1_pnorm,sig2_pnorm,sivelu,sivelv --labels sivelv > $1.log
+    python regression.py --data_points 10000 --model_type randomforestregressor --features siconc,sithic,utau_ai,utau_oi,vtau_ai,vtau_oi,sishea,sistre,sig1_pnorm,sig2_pnorm,sivelu,sivelv --labels sivelv > $1.log
 elif [ "$1" == "E2" ]; then
-    python modelling.py --data_points 10000 --model_type sgdregressor --features siconc,sithic,utau_ai,utau_oi,vtau_ai,vtau_oi,sishea,sistre,sig1_pnorm,sig2_pnorm,sivelu,sivelv --labels sivelu > $1.log
+    python regression.py --data_points 30000 --model_type sgdregressor --features siconc,sithic,utau_ai,utau_oi,vtau_ai,vtau_oi,sishea,sistre,sig1_pnorm,sig2_pnorm,sivelu,sivelv --labels sivelu > $1.log
 fi
 
 mv baseline_model.pkl $results

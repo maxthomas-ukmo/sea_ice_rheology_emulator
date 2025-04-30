@@ -360,7 +360,7 @@ def evaluate_model(pipe, val_X, val_y):
     gs = fig.add_gridspec(2, 1)
     ax1 = fig.add_subplot(gs[0, 0])
     ax1.scatter(val_y, y_pred, s=0.2, color='black', alpha=0.5)
-    ax1.plot([-1,1],[-1,1], color='black')
+    ax1.plot([-.5,.5],[-.5,.5], color='black')
     ax1.set_title('Predicted vs. True, MSE = ' + str(score))
 
     ax2 = fig.add_subplot(gs[1, 0])
@@ -370,7 +370,7 @@ def evaluate_model(pipe, val_X, val_y):
     return y_pred, score, fig
 
 def main(args):
-    ''' Main function to load the data and run the model training and evaluation. '''
+    ''' Main function to load the data and run the model training and evaluation. '''   
 
     warnings.simplefilter("ignore", category=DataConversionWarning)
 
@@ -412,7 +412,7 @@ def main(args):
     ax.scatter(val_y, val_pred, s=0.2, color='black', alpha=0.5, label='Validation')
     #ax.scatter(train_y, train_pred, s=0.2, color='red', alpha=0.5, label='Train')
     ax.set_title('Predicted vs. True ' + args['model_type'] + ': ' + str(mean_squared_error(val_y, val_pred))) 
-    ax.plot([-1,0.2],[-1,0.2], color='black')
+    ax.plot([-0.5,0.5],[-0.5,0.5], color='black')
     ax.legend()
 
     fig.savefig('modelling-baseline.png')
@@ -429,9 +429,9 @@ def main(args):
         ax = fig_tuned.add_subplot(111)
         ax.scatter(val_y, hp_search.best_estimator_.predict(val_X), s=0.2, color='black', alpha=0.5, label='Validation')
         #ax.scatter(train_y, hp_search.best_estimator_.predict(train_X), s=0.2, color='red', alpha=0.5, label='Train')
-        ax.set_title('Predicted vs. True ' + args['model_type'] + ': ' + str(mean_squared_error(val_y, hp_search.best_estimator_.predict(val_X)))) 
+        ax.set_title('Predicted vs. True ' + args['model_type'] + ', MSE: ' + str(mean_squared_error(val_y, hp_search.best_estimator_.predict(val_X)))) 
 
-        ax.plot([-1,0.2],[-1,0.2], color='black')
+        ax.plot([-0.5,0.5],[-0.5,0.5], color='black')
         
         fig_tuned.savefig('modelling-tuned.png')
         # save search
